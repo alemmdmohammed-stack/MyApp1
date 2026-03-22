@@ -1,0 +1,37 @@
+{
+  "packageId": "com.trend.pos",
+  "host": "ais-dev-z6qzhotksczldomfayatjs-108868564937.europe-west1.run.app",
+  "name": "Trend POS",
+  "launcherName": "Trend",
+  "display": "standalone",
+  "themeColor": "#10b981",
+  "navigationColor": "#050505",
+  "navigationColorDark": "#050505",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#050505",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "Logo1.png",
+  "maskableIconUrl": "Logo1.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "appVersionCode": 1,
+  "appVersionName": "1.0.0",
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": []
+}

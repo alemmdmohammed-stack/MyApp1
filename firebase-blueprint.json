@@ -1,0 +1,241 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System users and their roles",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "accountant", "engineer", "cashier"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "phone": { "type": "string" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["username", "role", "status"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Inventory products",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "brand": { "type": "string" },
+        "model": { "type": "string" },
+        "sku": { "type": "string" },
+        "barcode": { "type": "string" },
+        "price": { "type": "number" },
+        "cost": { "type": "number" },
+        "currency": { "type": "string" },
+        "stock_quantity": { "type": "integer" },
+        "min_stock_level": { "type": "integer" },
+        "unit": { "type": "string" },
+        "location": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["name", "price", "cost"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "Sales transactions",
+      "type": "object",
+      "properties": {
+        "customer_id": { "type": "integer" },
+        "customer_name": { "type": "string" },
+        "user_id": { "type": "integer" },
+        "total_amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "discount": { "type": "number" },
+        "payment_status": { "type": "string" },
+        "payment_method": { "type": "string" },
+        "invoice_number": { "type": "string" },
+        "items": { "type": "string" },
+        "cash_box_id": { "type": "integer" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["total_amount", "items"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "System notifications",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "integer" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "is_read": { "type": "integer" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "message"]
+    },
+    "ActivityLog": {
+      "title": "ActivityLog",
+      "description": "System activity logs",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "integer" },
+        "username": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["action", "details"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer records",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "balance": { "type": "number" },
+        "currency": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "description": "Supplier records",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "contact_person": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "balance": { "type": "number" },
+        "currency": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "Employee records",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "position": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "salary": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "CustomerPayment": {
+      "title": "CustomerPayment",
+      "description": "Customer payment records",
+      "type": "object",
+      "properties": {
+        "customer_id": { "type": "integer" },
+        "customer_name": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "payment_method": { "type": "string" },
+        "cash_box_id": { "type": "integer" },
+        "notes": { "type": "string" },
+        "user_id": { "type": "integer" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customer_id", "amount", "currency", "cash_box_id"]
+    },
+    "SupplierPayment": {
+      "title": "SupplierPayment",
+      "description": "Supplier payment records",
+      "type": "object",
+      "properties": {
+        "supplier_id": { "type": "integer" },
+        "supplier_name": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "payment_method": { "type": "string" },
+        "cash_box_id": { "type": "integer" },
+        "notes": { "type": "string" },
+        "user_id": { "type": "integer" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["supplier_id", "amount", "currency", "cash_box_id"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Product inventory"
+    },
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Customer records"
+    },
+    "/suppliers/{supplierId}": {
+      "schema": "Supplier",
+      "description": "Supplier records"
+    },
+    "/employees/{employeeId}": {
+      "schema": "Employee",
+      "description": "Employee records"
+    },
+    "/sales/{saleId}": {
+      "schema": "Sale",
+      "description": "Sales records"
+    },
+    "/purchases/{purchaseId}": {
+      "schema": "Sale",
+      "description": "Purchase records"
+    },
+    "/ledger/{ledgerId}": {
+      "schema": "object",
+      "description": "Ledger entries"
+    },
+    "/cash_boxes/{boxId}": {
+      "schema": "object",
+      "description": "Cash boxes"
+    },
+    "/currencies/{currencyId}": {
+      "schema": "object",
+      "description": "Currencies"
+    },
+    "/settings/{settingId}": {
+      "schema": "object",
+      "description": "System settings"
+    },
+    "/sales_returns/{returnId}": {
+      "schema": "object",
+      "description": "Sales returns"
+    },
+    "/purchases_returns/{returnId}": {
+      "schema": "object",
+      "description": "Purchases returns"
+    },
+    "/inventory_audit/{auditId}": {
+      "schema": "object",
+      "description": "Inventory audits"
+    },
+    "/maintenance/{maintenanceId}": {
+      "schema": "object",
+      "description": "Maintenance records"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "System notifications"
+    },
+    "/activity_log/{logId}": {
+      "schema": "ActivityLog",
+      "description": "Activity logs"
+    },
+    "/customer_payments/{paymentId}": {
+      "schema": "CustomerPayment",
+      "description": "Customer payments"
+    },
+    "/supplier_payments/{paymentId}": {
+      "schema": "SupplierPayment",
+      "description": "Supplier payments"
+    }
+  }
+}

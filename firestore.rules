@@ -1,0 +1,313 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: userId (from Auth)
+    // Fields:
+    //   - username: string (required)
+    //   - role: string (required, 'admin', 'accountant', 'engineer', 'cashier')
+    //   - status: string (required, 'pending', 'approved', 'rejected')
+    //   - phone: string (optional)
+    //   - updated_at: timestamp (required)
+    //
+    // Collection: products
+    // Document ID: productId
+    // Fields:
+    //   - name: string (required)
+    //   - category: string
+    //   - brand: string
+    //   - model: string
+    //   - sku: string
+    //   - barcode: string
+    //   - price: number (required)
+    //   - cost: number (required)
+    //   - currency: string
+    //   - stock_quantity: integer
+    //   - min_stock_level: integer
+    //   - unit: string
+    //   - location: string
+    //   - notes: string
+    //
+    // Collection: sales
+    // Document ID: saleId
+    // Fields:
+    //   - customer_id: integer
+    //   - customer_name: string
+    //   - user_id: integer
+    //   - total_amount: number (required)
+    //   - currency: string
+    //   - items: string (required, JSON)
+    //   - created_at: timestamp
+    //
+    // Collection: notifications
+    // Document ID: notificationId
+    // Fields:
+    //   - user_id: integer (optional, NULL for all)
+    //   - title: string (required)
+    //   - message: string (required)
+    //   - type: string
+    //   - is_read: integer
+    //   - created_at: timestamp
+    //
+    // Collection: activity_log
+    // Document ID: logId
+    // Fields:
+    //   - user_id: integer
+    //   - username: string
+    //   - action: string (required)
+    //   - details: string (required)
+    //   - created_at: timestamp
+    //
+    // Collection: maintenance_expenses, maintenance_parts, maintenance_losses, engineer_withdrawals, settlements, charity
+    // Document ID: auto-generated
+    // Fields: Various (mostly financial and maintenance related)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        (request.auth.token.email == "mohammedalemmd@gmail.com" && request.auth.token.email_verified == true) ||
+        (request.auth.token.email == "alemmdmohammed@gmail.com" && request.auth.token.email_verified == true) ||
+        (request.auth.token.email == "mohhyyq1155@gmail.com" && request.auth.token.email_verified == true) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'accountant')
+      );
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.username is string && data.username.size() > 0 && data.username.size() < 100 &&
+             data.role in ['admin', 'accountant', 'engineer', 'cashier'] &&
+             data.status in ['pending', 'approved', 'rejected'];
+    }
+
+    function isValidProduct(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             data.price is number && data.price >= 0 &&
+             data.cost is number && data.cost >= 0;
+    }
+
+    function isValidSale(data) {
+      return data.total_amount is number && data.total_amount >= 0;
+    }
+
+    function isValidNotification(data) {
+      return data.title is string && data.title.size() > 0 &&
+             data.message is string && data.message.size() > 0;
+    }
+
+    function isValidActivityLog(data) {
+      return data.action is string && data.action.size() > 0 &&
+             data.details is string && data.details.size() > 0;
+    }
+
+    function isValidCustomer(data) {
+      return data.name is string && data.name.size() > 0;
+    }
+
+    function isValidSupplier(data) {
+      return data.name is string && data.name.size() > 0;
+    }
+
+    function isValidEmployee(data) {
+      return data.name is string && data.name.size() > 0;
+    }
+
+    function isValidPayment(data) {
+      return data.amount is number && data.amount > 0 &&
+             data.currency is string && data.currency.size() > 0 &&
+             data.cash_box_id is number;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && (isOwner(userId) || isAdmin());
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && (isOwner(userId) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidProduct(request.resource.data);
+      allow update: if isAuthenticated() && isValidProduct(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /customers/{customerId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidCustomer(request.resource.data);
+      allow update: if isAuthenticated() && isValidCustomer(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /suppliers/{supplierId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidSupplier(request.resource.data);
+      allow update: if isAuthenticated() && isValidSupplier(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /employees/{employeeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidEmployee(request.resource.data);
+      allow update: if isAuthenticated() && isValidEmployee(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /sales/{saleId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidSale(request.resource.data);
+      allow update: if isAuthenticated() && isValidSale(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /purchases/{purchaseId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    match /ledger/{ledgerId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    match /cash_boxes/{boxId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    match /currencies/{currencyId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    match /sales_returns/{returnId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    match /purchases_returns/{returnId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    match /inventory_audit/{auditId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    match /maintenance/{maintenanceId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    match /maintenance_expenses/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /maintenance_parts/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /maintenance_losses/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /engineer_withdrawals/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /settlements/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /charity/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidNotification(request.resource.data);
+      allow update: if isAuthenticated() && (isAdmin() || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['is_read'])));
+      allow delete: if isAdmin();
+    }
+
+    match /activity_log/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() && isValidActivityLog(request.resource.data);
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    match /customer_payments/{paymentId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidPayment(request.resource.data);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /supplier_payments/{paymentId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidPayment(request.resource.data);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /test/connection {
+      allow read: if isAuthenticated();
+    }
+
+    // Default deny
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

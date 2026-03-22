@@ -1,0 +1,5 @@
+{
+  "name": "ترند POS",
+  "description": "نظام ERP متكامل لإدارة المبيعات والمخزون والمحاسبة مع دعم كامل للعمل بدون إنترنت (PWA).",
+  "requestFramePermissions": ["camera"]
+}
